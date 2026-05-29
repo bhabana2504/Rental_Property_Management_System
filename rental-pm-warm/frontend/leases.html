@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Leases — Rental PM Pro</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/pro.css">
+</head>
+<body>
+<div class="app">
+
+  <!-- sidebar injected by JS -->
+  <div id="sidebarMount"></div>
+
+  <main class="main">
+    <header class="topbar">
+      <button class="hamburger" id="hamburger"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+      <div class="topbar-left">
+        <div class="topbar-title">Lease Agreements</div>
+        <div class="topbar-crumb">Manage, sign, and generate lease PDFs</div>
+      </div>
+      <div class="topbar-actions">
+        <div class="search-field">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          <input type="text" id="leaseSearch" placeholder="Search leases…">
+        </div>
+        <button class="btn btn-primary" onclick="openModal('addLeaseModal')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          New Lease
+        </button>
+        <button class="btn btn-secondary" onclick="sendRenewalReminders()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+          Send Reminders
+        </button>
+      </div>
+    </header>
+
+    <div class="page-content">
+      <!-- Filters -->
+      <div class="filter-bar">
+        <button class="filter-chip active" data-status="">All Leases</button>
+        <button class="filter-chip" data-status="Active">Active</button>
+        <button class="filter-chip" data-status="Draft">Draft</button>
+        <button class="filter-chip" data-status="Expired">Expired</button>
+        <button class="filter-chip" data-status="Terminated">Terminated</button>
+      </div>
+
+      <!-- Skeleton loading -->
+      <div id="leasesSkeleton" class="skeleton-grid">
+        <div class="skeleton-card"></div><div class="skeleton-card"></div><div class="skeleton-card"></div>
+      </div>
+
+      <!-- Leases table -->
+      <div class="glass-panel" id="leasesPanel" style="display:none">
+        <div class="panel-head">
+          <span class="panel-head-title">Lease Agreements</span>
+          <span class="panel-head-count" id="leaseCount"></span>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table" id="leasesTable">
+            <thead>
+              <tr>
+                <th>Tenant</th>
+                <th>Property</th>
+                <th>Duration</th>
+                <th>Monthly Rent</th>
+                <th>Status</th>
+                <th>Signatures</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="leasesBody"></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="leasesPagination"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Add Lease Modal -->
+<div class="modal-backdrop" id="addLeaseModal">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-head">
+      <span>New Lease Agreement</span>
+      <button class="modal-close" onclick="closeAllModals()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Tenant *</label>
+          <select id="leaseTenantId" class="form-control"></select>
+        </div>
+        <div class="form-group">
+          <label>Property *</label>
+          <select id="leasePropertyId" class="form-control"></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Lease Start *</label>
+          <input type="date" id="leaseStart" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Lease End *</label>
+          <input type="date" id="leaseEnd" class="form-control">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Monthly Rent (₹)</label>
+          <input type="number" id="leaseRent" class="form-control" placeholder="Auto-filled from property">
+        </div>
+        <div class="form-group">
+          <label>Deposit (₹)</label>
+          <input type="number" id="leaseDeposit" class="form-control" placeholder="Security deposit">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Notice Period (days)</label>
+        <input type="number" id="leaseNotice" class="form-control" value="30">
+      </div>
+      <div class="form-group">
+        <label>Special Terms &amp; Conditions</label>
+        <textarea id="leaseTerms" class="form-control" rows="4" placeholder="Any special clauses…"></textarea>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeAllModals()">Cancel</button>
+      <button class="btn btn-primary" onclick="createLease()">Create Lease</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/app.js"></script>
+<script src="js/modules/api.js"></script>
+<script src="js/modules/pro.js"></script>
+<script>
+  let currentFilter = '';
+  let currentPage   = 1;
+
+  async function loadLeases(page = 1) {
+    document.getElementById('leasesSkeleton').style.display = '';
+    document.getElementById('leasesPanel').style.display    = 'none';
+
+    const params = new URLSearchParams({ page, limit: 15 });
+    if (currentFilter) params.set('status', currentFilter);
+    const search = document.getElementById('leaseSearch').value.trim();
+    if (search)   params.set('search', search);
+
+    const data = await API.get('/leases?' + params);
+    renderLeases(data?.data || [], data?.pagination);
+
+    document.getElementById('leasesSkeleton').style.display = 'none';
+    document.getElementById('leasesPanel').style.display    = '';
+  }
+
+  function renderLeases(leases, pagination) {
+    document.getElementById('leaseCount').textContent = `${pagination?.total || leases.length} leases`;
+    const tbody = document.getElementById('leasesBody');
+
+    if (!leases.length) {
+      tbody.innerHTML = `<tr><td colspan="7" class="empty-cell">No leases found</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = leases.map(l => {
+      const ls = leaseStatus(l.endDate);
+      const sigBadge = (signed, label) =>
+        `<span class="sig-badge ${signed ? 'signed' : 'unsigned'}">${signed ? '✓' : '○'} ${label}</span>`;
+      return `
+        <tr class="table-row-animated">
+          <td><div class="tenant-cell"><div class="av av-${hashColor(l.tenantId?.name)}">${initials(l.tenantId?.name)}</div><div><strong>${esc(l.tenantId?.name || '—')}</strong><small>${esc(l.tenantId?.email || '')}</small></div></div></td>
+          <td>${esc(l.propertyId?.name || '—')}</td>
+          <td><small>${fmtDate(l.startDate)} → ${fmtDate(l.endDate)}</small></td>
+          <td><strong>${fmtMoney(l.monthlyRent)}</strong></td>
+          <td>${statusPill(ls.label)}</td>
+          <td class="sig-cell">${sigBadge(l.signedByTenant,'Tenant')} ${sigBadge(l.signedByOwner,'Owner')}</td>
+          <td>
+            <div class="action-row">
+              <button class="icon-btn" title="Generate PDF" onclick="generatePDF('${l._id}')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              </button>
+              <button class="icon-btn" title="Sign as Owner" onclick="signLease('${l._id}','owner')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg>
+              </button>
+            </div>
+          </td>
+        </tr>`;
+    }).join('');
+
+    renderPagination('leasesPagination', pagination, p => { currentPage = p; loadLeases(p); });
+  }
+
+  // Load demo leases from localStorage if API unavailable
+  function getDemoLeases() {
+    const tenants    = JSON.parse(localStorage.getItem('rpm_tenants') || '[]');
+    const properties = JSON.parse(localStorage.getItem('rpm_properties') || '[]');
+    return tenants.filter(t => t.leaseStart).map((t, i) => ({
+      _id: 'l' + i,
+      tenantId:   { _id: t.id, name: t.name, email: t.email },
+      propertyId: { _id: t.propertyId, name: properties.find(p => p.id === t.propertyId)?.name || '—' },
+      startDate:  t.leaseStart,
+      endDate:    t.leaseEnd,
+      monthlyRent: properties.find(p => p.id === t.propertyId)?.rent || 0,
+      status: 'Active',
+      signedByTenant: true,
+      signedByOwner:  true,
+    }));
+  }
+
+  async function createLease() {
+    const body = {
+      tenantId:        document.getElementById('leaseTenantId').value,
+      propertyId:      document.getElementById('leasePropertyId').value,
+      startDate:       document.getElementById('leaseStart').value,
+      endDate:         document.getElementById('leaseEnd').value,
+      monthlyRent:     document.getElementById('leaseRent').value,
+      deposit:         document.getElementById('leaseDeposit').value,
+      noticePeriodDays:document.getElementById('leaseNotice').value,
+      terms:           document.getElementById('leaseTerms').value,
+    };
+    if (!body.tenantId || !body.propertyId || !body.startDate || !body.endDate) {
+      toast('Please fill all required fields', 'error'); return;
+    }
+    try {
+      await API.post('/leases', body);
+      toast('Lease created successfully', 'success');
+      closeAllModals();
+      loadLeases(currentPage);
+    } catch(e) {
+      toast('Lease created (demo mode)', 'success');
+      closeAllModals();
+    }
+  }
+
+  async function generatePDF(id) {
+    toast('Generating PDF…', 'info');
+    try {
+      const result = await API.get('/leases/' + id + '/pdf');
+      if (result.pdfUrl) {
+        window.open(result.pdfUrl, '_blank');
+        toast('PDF generated', 'success');
+      }
+    } catch(e) {
+      toast('PDF generation requires backend (demo mode)', 'info');
+    }
+  }
+
+  async function signLease(id, signerType) {
+    try {
+      await API.patch('/leases/' + id + '/sign', { signerType });
+      toast('Lease signed as ' + signerType, 'success');
+      loadLeases(currentPage);
+    } catch(e) {
+      toast('Signed (demo mode)', 'success');
+    }
+  }
+
+  async function sendRenewalReminders() {
+    try {
+      const r = await API.post('/leases/reminders', {});
+      toast(r.message || 'Reminders sent', 'success');
+    } catch(e) {
+      toast('Reminders sent (demo mode)', 'success');
+    }
+  }
+
+  async function populateSelects() {
+    const tenants    = JSON.parse(localStorage.getItem('rpm_tenants') || '[]');
+    const properties = JSON.parse(localStorage.getItem('rpm_properties') || '[]');
+
+    document.getElementById('leaseTenantId').innerHTML =
+      tenants.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+    document.getElementById('leasePropertyId').innerHTML =
+      properties.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+
+    // auto-fill rent when property selected
+    document.getElementById('leasePropertyId').addEventListener('change', function() {
+      const prop = properties.find(p => p.id === this.value);
+      if (prop) document.getElementById('leaseRent').value = prop.rent;
+    });
+  }
+
+  // Filter chips
+  document.querySelectorAll('.filter-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      currentFilter = chip.dataset.status;
+      loadLeases(1);
+    });
+  });
+
+  document.getElementById('leaseSearch').addEventListener('input', debounce(() => loadLeases(1), 300));
+
+  async function boot() {
+    ProModule.injectSidebar('leases');
+    ProModule.applyUserInfo();
+    await populateSelects();
+    // Try API first, fall back to demo data
+    try {
+      await loadLeases(1);
+    } catch(e) {
+      const demoLeases = getDemoLeases();
+      renderLeases(demoLeases, { total: demoLeases.length });
+      document.getElementById('leasesSkeleton').style.display = 'none';
+      document.getElementById('leasesPanel').style.display    = '';
+    }
+  }
+
+  boot();
+</script>
+</body>
+</html>

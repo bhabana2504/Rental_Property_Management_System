@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analytics — Rental PM Pro</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/pro.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="app">
+  <div id="sidebarMount"></div>
+
+  <main class="main">
+    <header class="topbar">
+      <button class="hamburger" id="hamburger"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+      <div class="topbar-left">
+        <div class="topbar-title">Analytics Dashboard</div>
+        <div class="topbar-crumb">Portfolio intelligence &amp; financial performance</div>
+      </div>
+      <div class="topbar-actions">
+        <select id="yearFilter" class="form-control" style="width:120px" onchange="loadAnalytics()">
+          <option>2026</option><option>2025</option><option>2024</option>
+        </select>
+        <button class="btn btn-secondary" onclick="exportReport()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export
+        </button>
+      </div>
+    </header>
+
+    <div class="page-content">
+      <!-- KPI Row -->
+      <div class="kpi-grid" id="analyticsKPIs"></div>
+
+      <!-- Charts row -->
+      <div class="charts-grid">
+        <div class="glass-panel chart-panel">
+          <div class="panel-head">
+            <span class="panel-head-title">📈 Revenue Trend</span>
+            <div class="chart-legend">
+              <span class="legend-dot" style="background:#2D6A4F"></span>Collected
+              <span class="legend-dot" style="background:#3b82f6;margin-left:12px"></span>Pending
+            </div>
+          </div>
+          <div class="chart-wrap"><canvas id="revenueChart"></canvas></div>
+        </div>
+
+        <div class="glass-panel chart-panel">
+          <div class="panel-head">
+            <span class="panel-head-title">🏘️ Occupancy Rate</span>
+          </div>
+          <div class="chart-wrap doughnut-wrap">
+            <canvas id="occupancyChart"></canvas>
+            <div class="doughnut-center" id="occupancyLabel"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Second row -->
+      <div class="charts-grid">
+        <div class="glass-panel chart-panel">
+          <div class="panel-head">
+            <span class="panel-head-title">🔧 Maintenance by Category</span>
+          </div>
+          <div class="chart-wrap"><canvas id="maintChart"></canvas></div>
+        </div>
+
+        <div class="glass-panel chart-panel">
+          <div class="panel-head">
+            <span class="panel-head-title">💳 Payment Methods</span>
+          </div>
+          <div class="chart-wrap"><canvas id="payMethodChart"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Property performance table -->
+      <div class="glass-panel">
+        <div class="panel-head">
+          <span class="panel-head-title">🏢 Property Performance</span>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr><th>Property</th><th>Status</th><th>Rent</th><th>Collected</th><th>Open Tickets</th><th>Collection Rate</th></tr>
+            </thead>
+            <tbody id="propPerfBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Fraud Risk Overview -->
+      <div class="glass-panel">
+        <div class="panel-head">
+          <span class="panel-head-title">🤖 AI Fraud Risk Overview</span>
+          <a href="verification.html" class="panel-head-link">Full report →</a>
+        </div>
+        <div id="fraudSummary" class="fraud-summary-grid"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="js/app.js"></script>
+<script src="js/modules/api.js"></script>
+<script src="js/modules/pro.js"></script>
+<script>
+let revenueChartInst, occupancyChartInst, maintChartInst, payMethodChartInst;
+
+const COLORS = ['#2D6A4F','#3b82f6','#C07828','#ef4444','#8b5cf6','#ec4899'];
+
+function buildRevenueChart(labels, collected, pending) {
+  if (revenueChartInst) revenueChartInst.destroy();
+  const ctx = document.getElementById('revenueChart').getContext('2d');
+  const gradient = ctx.createLinearGradient(0,0,0,260);
+  gradient.addColorStop(0,'rgba(0,212,170,0.3)');
+  gradient.addColorStop(1,'rgba(0,212,170,0)');
+  revenueChartInst = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        { label:'Collected', data:collected, borderColor:'#2D6A4F', backgroundColor:gradient, tension:0.4, fill:true, pointBackgroundColor:'#2D6A4F', pointRadius:5 },
+        { label:'Pending',   data:pending,   borderColor:'#3b82f6', backgroundColor:'transparent', tension:0.4, borderDash:[6,3], pointBackgroundColor:'#3b82f6', pointRadius:4 },
+      ],
+    },
+    options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false }}, scales:{ y:{ beginAtZero:true, ticks:{ callback: v=>'₹'+v.toLocaleString('en-IN'), color:'#8B7355' }, grid:{ color:'rgba(255,255,255,0.05)' }}, x:{ ticks:{ color:'#8B7355' }, grid:{ display:false }}}},
+  });
+}
+
+function buildOccupancyChart(rented, available) {
+  if (occupancyChartInst) occupancyChartInst.destroy();
+  const ctx = document.getElementById('occupancyChart').getContext('2d');
+  occupancyChartInst = new Chart(ctx, {
+    type: 'doughnut',
+    data: { labels:['Rented','Available'], datasets:[{ data:[rented,available], backgroundColor:['#2D6A4F','rgba(255,255,255,0.08)'], borderWidth:0, hoverOffset:4 }]},
+    options: { responsive:true, maintainAspectRatio:false, cutout:'72%', plugins:{ legend:{ display:false }}},
+  });
+  const rate = rented + available > 0 ? Math.round(rented/(rented+available)*100) : 0;
+  document.getElementById('occupancyLabel').innerHTML = `<strong>${rate}%</strong><small>Occupied</small>`;
+}
+
+function buildMaintChart(categories) {
+  if (maintChartInst) maintChartInst.destroy();
+  const ctx = document.getElementById('maintChart').getContext('2d');
+  maintChartInst = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: categories.map(c=>c._id||'Other'),
+      datasets: [{ label:'Tickets', data:categories.map(c=>c.count), backgroundColor:COLORS, borderRadius:6, borderSkipped:false }],
+    },
+    options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false }}, scales:{ y:{ beginAtZero:true, ticks:{ color:'#8B7355', stepSize:1 }, grid:{ color:'rgba(255,255,255,0.05)' }}, x:{ ticks:{ color:'#8B7355' }, grid:{ display:false }}}},
+  });
+}
+
+function buildPayMethodChart(methods) {
+  if (payMethodChartInst) payMethodChartInst.destroy();
+  const ctx = document.getElementById('payMethodChart').getContext('2d');
+  payMethodChartInst = new Chart(ctx, {
+    type: 'pie',
+    data: { labels: Object.keys(methods), datasets:[{ data: Object.values(methods), backgroundColor:COLORS, borderWidth:2, borderColor:'rgba(0,0,0,0.3)' }]},
+    options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'right', labels:{ color:'#8B7355', boxWidth:12 }}}},
+  });
+}
+
+function renderKPIs(kpis) {
+  const items = [
+    { label:'Total Properties',  value: kpis.totalProperties,   sub: `${kpis.availableProperties} available`,  icon:'🏢', color:'teal'  },
+    { label:'Active Tenants',    value: kpis.activeTenants,      sub: `${kpis.occupancyRate}% occupancy`,       icon:'👥', color:'green' },
+    { label:'Monthly Revenue',   value: fmtMoney(kpis.monthlyRevenue), sub: `${fmtMoney(kpis.pendingRevenue)} pending`, icon:'💰', color:'blue' },
+    { label:'Collection Rate',   value: kpis.collectionRate+'%', sub: `${kpis.overduePayments} overdue`,        icon:'📊', color:'amber' },
+    { label:'Open Tickets',      value: kpis.openTickets,        sub: 'maintenance requests',                   icon:'🔧', color:'red'   },
+  ];
+  document.getElementById('analyticsKPIs').innerHTML = items.map(k => `
+    <div class="kpi-card ${k.color}-glow">
+      <div class="kpi-card-bg"></div>
+      <div class="kpi-icon ${k.color}"><span style="font-size:18px">${k.icon}</span></div>
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-value">${k.value}</div>
+      <div class="kpi-sub">${k.sub}</div>
+    </div>`).join('');
+}
+
+function renderPropPerf(data) {
+  document.getElementById('propPerfBody').innerHTML = data.map(p => {
+    const rate = Math.min(p.roi, 100);
+    return `<tr class="table-row-animated">
+      <td><strong>${esc(p.name)}</strong></td>
+      <td>${statusPill(p.status)}</td>
+      <td>${fmtMoney(p.rent)}/mo</td>
+      <td>${fmtMoney(p.totalCollected)}</td>
+      <td>${p.openTickets > 0 ? `<span class="pill pill-amber"><span class="pill-dot"></span>${p.openTickets} open</span>` : `<span class="pill pill-green"><span class="pill-dot"></span>None</span>`}</td>
+      <td>
+        <div class="progress-row">
+          <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${rate}%;background:${rate>=80?'#2D6A4F':rate>=50?'#C07828':'#ef4444'}"></div></div>
+          <span>${rate}%</span>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// Build demo analytics from localStorage
+function buildDemoAnalytics() {
+  const properties  = JSON.parse(localStorage.getItem('rpm_properties') || '[]');
+  const tenants     = JSON.parse(localStorage.getItem('rpm_tenants') || '[]');
+  const payments    = JSON.parse(localStorage.getItem('rpm_payments') || '[]');
+  const maintenance = JSON.parse(localStorage.getItem('rpm_maintenance') || '[]');
+
+  const rented    = properties.filter(p=>p.status==='Rented').length;
+  const available = properties.filter(p=>p.status==='Available').length;
+  const collected = payments.filter(p=>p.status==='Paid').reduce((s,p)=>s+p.amount,0);
+  const pending   = payments.filter(p=>p.status==='Pending').reduce((s,p)=>s+p.amount,0);
+  const open      = maintenance.filter(m=>m.status!=='Completed').length;
+
+  const kpis = {
+    totalProperties: properties.length, availableProperties: available,
+    activeTenants: tenants.length, occupancyRate: Math.round(rented/properties.length*100)||0,
+    monthlyRevenue: collected, pendingRevenue: pending,
+    openTickets: open, overduePayments: 0, collectionRate: payments.length > 0 ? Math.round(payments.filter(p=>p.status==='Paid').length/payments.length*100) : 0,
+  };
+
+  renderKPIs(kpis);
+
+  // Revenue chart — mock 6 months
+  const months = ['Nov','Dec','Jan','Feb','Mar','Apr'];
+  buildRevenueChart(months, [380000,468000,420000,508000,collected*0.9,collected], [50000,70000,85000,0,pending*0.5,pending]);
+  buildOccupancyChart(rented, available);
+
+  const cats = [{_id:'Plumbing',count:1},{_id:'HVAC',count:1},{_id:'Electrical',count:1},{_id:'Other',count:1}];
+  buildMaintChart(cats);
+  buildPayMethodChart({ NEFT:4, UPI:3, RTGS:2, Cash:1 });
+
+  // Property performance
+  const propPerf = properties.map(p => {
+    const propPays = payments.filter(pay => pay.propertyId === p.id && pay.status === 'Paid');
+    const total = propPays.reduce((s,pay)=>s+pay.amount,0);
+    return { name:p.name, status:p.status, rent:p.rent, totalCollected:total, openTickets: maintenance.filter(m=>m.propertyId===p.id&&m.status!=='Completed').length, roi: p.rent>0?Math.round(total/p.rent*100):0 };
+  });
+  renderPropPerf(propPerf);
+
+  // Fraud summary
+  document.getElementById('fraudSummary').innerHTML = `
+    <div class="fraud-card low"><div class="fraud-num">3</div><div class="fraud-label">Low Risk</div></div>
+    <div class="fraud-card medium"><div class="fraud-num">1</div><div class="fraud-label">Medium Risk</div></div>
+    <div class="fraud-card high"><div class="fraud-num">0</div><div class="fraud-label">High Risk</div></div>
+    <div class="fraud-card verified"><div class="fraud-num">${tenants.length}</div><div class="fraud-label">Aadhaar Verified</div></div>`;
+}
+
+async function loadAnalytics() {
+  try {
+    const [dashboard, perfData] = await Promise.all([
+      API.get('/analytics/dashboard'),
+      API.get('/analytics/property-performance'),
+    ]);
+    if (dashboard?.data?.kpis) renderKPIs(dashboard.data.kpis);
+    // ... render charts from API data
+    buildDemoAnalytics(); // fallback to demo charts for now
+  } catch(e) {
+    buildDemoAnalytics();
+  }
+}
+
+async function exportReport() {
+  toast('Preparing report export…', 'info');
+  setTimeout(() => toast('Export feature requires backend API', 'info'), 1000);
+}
+
+async function boot() {
+  ProModule.injectSidebar('analytics');
+  ProModule.applyUserInfo();
+  await seedOnce();
+  await loadAnalytics();
+}
+
+boot();
+</script>
+</body>
+</html>

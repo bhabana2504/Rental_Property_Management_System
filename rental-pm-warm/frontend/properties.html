@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Properties — Rental Property Management</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/pro.css">
+</head>
+<body>
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-logo">
+        <svg viewBox="0 0 36 36" fill="none"><rect width="36" height="36" rx="8" fill="#2D6A4F" fill-opacity="0.10"/><rect x="1" y="1" width="34" height="34" rx="7" stroke="#2D6A4F" stroke-opacity="0.25" stroke-width="1"/><path d="M10 26V14l8-6 8 6v12" stroke="#2D6A4F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 26v-6h6v6" stroke="#2D6A4F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="18" cy="11" r="1.5" fill="#2D6A4F"/></svg>
+      </div>
+      <div class="brand-wordmark"><strong>Rental PM</strong><span>Property Management System</span></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">Overview</div>
+      <a href="index.html" class="nav-link"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg></span><span class="nav-label-text">Dashboard</span></a>
+      <div class="nav-section" style="margin-top:8px;">Management</div>
+      <a href="properties.html" class="nav-link"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span><span class="nav-label-text">Properties</span></a>
+      <a href="tenants.html" class="nav-link"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></span><span class="nav-label-text">Tenants</span></a>
+      <a href="payments.html" class="nav-link"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></span><span class="nav-label-text">Payments</span></a>
+      <a href="maintenance.html" class="nav-link"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg></span><span class="nav-label-text">Maintenance</span><span class="nav-badge">4</span></a>
+      <div class="nav-section" style="margin-top:8px;">Compliance</div>
+      <a href="leases.html" class="nav-link"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg></span><span class="nav-label-text">Leases</span></a>
+      <a href="verification.html" class="nav-link"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span><span class="nav-label-text">Verification</span></a>
+      <a href="documents.html" class="nav-link"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg></span><span class="nav-label-text">Documents</span></a>
+      <div class="nav-section" style="margin-top:8px;">System</div>
+      <a href="analytics.html" class="nav-link"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span><span class="nav-label-text">Analytics</span></a>
+      <a href="notifications.html" class="nav-link"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></span><span class="nav-label-text">Notifications</span><span class="nav-badge">3</span></a>
+      <a href="chat.html" class="nav-link"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></span><span class="nav-label-text">Messages</span></a>
+      <a href="login.html" class="nav-link"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span><span class="nav-label-text">Sign Out</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="user-avatar">AD</div>
+        <div class="user-meta"><strong>Admin Director</strong><span>Portfolio Manager</span></div>
+        <div class="online-dot"></div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <button class="hamburger" id="hamburger"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+      <div class="topbar-left">
+        <div class="topbar-title">Properties</div>
+        <div class="topbar-crumb">Manage and monitor your entire rental portfolio</div>
+      </div>
+      <div class="topbar-actions">
+        <div class="search-field">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          <input type="text" id="propSearch" placeholder="Search properties…" />
+        </div>
+        <button class="btn btn-primary" id="addPropBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Property
+        </button>
+      </div>
+    </header>
+
+    <div class="page-content">
+      <div class="section-head">
+        <div class="section-head-left">
+          <span class="section-title">All Properties</span>
+          <span class="item-count" id="propCount">0</span>
+        </div>
+        <div class="section-head-right">
+          <select class="sel" id="propStatus">
+            <option value="all">All Status</option>
+            <option value="Available">Available</option>
+            <option value="Rented">Rented</option>
+          </select>
+          <select class="sel" id="propSort">
+            <option value="">Sort by…</option>
+            <option value="rent-desc">Rent: High → Low</option>
+            <option value="rent-asc">Rent: Low → High</option>
+            <option value="alpha">Name A–Z</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="prop-grid" id="propGrid"></div>
+    </div>
+  </main>
+</div>
+
+<!-- PROPERTY MODAL -->
+<div class="modal-backdrop" id="propModal">
+  <div class="modal-box">
+    <div class="modal-top">
+      <span class="modal-title" id="propModalTitle">Add Property</span>
+      <button class="modal-close" onclick="closeAllModals()">✕</button>
+    </div>
+    <form id="propForm" novalidate>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="field-label">Property Name *</label>
+          <input class="field-input" type="text" name="name" placeholder="e.g. Meridian Tower — Unit 4B" />
+          <div class="field-error"></div>
+        </div>
+        <div class="form-group">
+          <label class="field-label">Full Address *</label>
+          <input class="field-input" type="text" name="address" placeholder="Street, City, State, ZIP" />
+          <div class="field-error"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="field-label">Property Type *</label>
+            <select class="field-input" name="type">
+              <option value="">Select…</option>
+              <option>Apartment</option><option>Penthouse</option>
+              <option>Villa</option><option>Loft</option>
+              <option>Cottage</option><option>Condo</option>
+              <option>Studio</option><option>Townhouse</option>
+            </select>
+            <div class="field-error"></div>
+          </div>
+          <div class="form-group">
+            <label class="field-label">Monthly Rent ($) *</label>
+            <input class="field-input" type="number" name="rent" placeholder="35000" min="1" />
+            <div class="field-error"></div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="field-label">Bedrooms</label>
+            <input class="field-input" type="number" name="bedrooms" value="2" min="0" />
+          </div>
+          <div class="form-group">
+            <label class="field-label">Bathrooms</label>
+            <input class="field-input" type="number" name="bathrooms" value="1" min="0" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="field-label">Area (sq ft)</label>
+            <input class="field-input" type="number" name="area" placeholder="1200" min="0" />
+          </div>
+          <div class="form-group">
+            <label class="field-label">Floor / Level</label>
+            <input class="field-input" type="text" name="floor" placeholder="e.g. 14th, Ground" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="field-label">Status</label>
+            <select class="field-input" name="status">
+              <option value="Available">Available</option>
+              <option value="Rented">Rented</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="field-label">Amenities</label>
+            <input class="field-input" type="text" name="amenities" placeholder="Pool, Gym, Concierge…" />
+          </div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button type="button" class="btn btn-ghost btn-sm" onclick="closeAllModals()">Cancel</button>
+        <button type="submit" class="btn btn-primary btn-sm">Save Property</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="js/app.js"></script>
+<script src="js/modules/api.js"></script>
+<script src="js/modules/pro.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  ProModule.injectSidebar('properties');
+  ProModule.applyUserInfo();
+});
+</script>
+</body>
+</html>

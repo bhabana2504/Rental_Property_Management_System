@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Documents — Rental PM Pro</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/pro.css">
+</head>
+<body>
+<div class="app">
+  <div id="sidebarMount"></div>
+  <main class="main">
+    <header class="topbar">
+      <button class="hamburger" id="hamburger"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+      <div class="topbar-left">
+        <div class="topbar-title">Documents</div>
+        <div class="topbar-crumb">Secure storage for leases, Aadhaar, NOC &amp; receipts</div>
+      </div>
+      <div class="topbar-actions">
+        <div class="search-field">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          <input type="text" id="docSearch" placeholder="Search documents…">
+        </div>
+        <button class="btn btn-primary" onclick="openModal('uploadModal')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Upload Document
+        </button>
+      </div>
+    </header>
+
+    <div class="page-content">
+      <!-- Stats -->
+      <div class="kpi-grid" id="docStats"></div>
+
+      <!-- Type filter -->
+      <div class="filter-bar">
+        <button class="filter-chip active" data-dtype="">All Documents</button>
+        <button class="filter-chip" data-dtype="Aadhaar">Aadhaar</button>
+        <button class="filter-chip" data-dtype="PAN">PAN Card</button>
+        <button class="filter-chip" data-dtype="Lease">Leases</button>
+        <button class="filter-chip" data-dtype="Receipt">Receipts</button>
+        <button class="filter-chip" data-dtype="NOC">NOC</button>
+        <button class="filter-chip" data-dtype="Other">Other</button>
+      </div>
+
+      <!-- Grid view -->
+      <div class="glass-panel">
+        <div class="panel-head">
+          <span class="panel-head-title">📁 Document Vault</span>
+          <div style="display:flex;gap:8px">
+            <button class="icon-btn" id="viewGrid" title="Grid view" onclick="setView('grid')" style="background:rgba(0,212,170,0.15);color:var(--teal)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+            </button>
+            <button class="icon-btn" id="viewList" title="List view" onclick="setView('list')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            </button>
+          </div>
+        </div>
+        <div id="docContainer"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Upload Modal -->
+<div class="modal-backdrop" id="uploadModal">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-head"><span>Upload Document</span><button class="modal-close" onclick="closeAllModals()">✕</button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Document Name *</label>
+          <input type="text" id="upName" class="form-control" placeholder="e.g. Aadhaar — Priya Sharma">
+        </div>
+        <div class="form-group">
+          <label>Type</label>
+          <select id="upType" class="form-control">
+            <option>Aadhaar</option><option>PAN</option><option>Lease</option>
+            <option>NOC</option><option>Receipt</option><option>Photo</option><option>Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Tenant (optional)</label>
+        <select id="upTenant" class="form-control"><option value="">— None —</option></select>
+      </div>
+      <div class="form-group">
+        <label>Property (optional)</label>
+        <select id="upProperty" class="form-control"><option value="">— None —</option></select>
+      </div>
+      <div class="form-group">
+        <label>File *</label>
+        <div class="upload-zone" id="uploadZone">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="32"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <p>Drop file or <span class="upload-link">browse</span></p>
+          <small>PDF, JPG, PNG, DOC — max 10MB</small>
+          <input type="file" id="upFile" style="display:none" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+        </div>
+        <div id="upFileName" class="upload-filename"></div>
+      </div>
+      <div class="form-group">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+          <input type="checkbox" id="upPrivate" style="width:14px;height:14px">
+          <span>Private document (only visible to admins)</span>
+        </label>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeAllModals()">Cancel</button>
+      <button class="btn btn-primary" onclick="uploadDoc()">Upload</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/app.js"></script>
+<script src="js/modules/api.js"></script>
+<script src="js/modules/pro.js"></script>
+<script>
+let currentView = 'grid';
+let allDocs     = [];
+let activeType  = '';
+
+const TYPE_ICON = { Aadhaar:'🪪', PAN:'💳', Lease:'📄', NOC:'📋', Receipt:'🧾', Photo:'🖼️', Other:'📎' };
+const TYPE_EXT  = { 'application/pdf':'pdf', 'image/jpeg':'img', 'image/png':'img', 'image/gif':'img' };
+
+function getDemoDocClass(type) {
+  if (type === 'Aadhaar' || type === 'PAN') return 'img';
+  if (type === 'Lease' || type === 'NOC' || type === 'Receipt') return 'pdf';
+  return 'other';
+}
+
+function buildDemoDocs() {
+  const tenants    = JSON.parse(localStorage.getItem('rpm_tenants') || '[]');
+  const properties = JSON.parse(localStorage.getItem('rpm_properties') || '[]');
+  const docs = [];
+  let id = 1;
+
+  tenants.forEach(t => {
+    const prop = properties.find(p => p.id === t.propertyId);
+    docs.push({
+      _id:      'd' + id++,
+      name:     `Aadhaar — ${t.name}`,
+      type:     'Aadhaar',
+      tenantId: { name: t.name },
+      propertyId: prop ? { name: prop.name } : null,
+      size:     Math.floor(Math.random() * 800 + 200) * 1024,
+      createdAt: new Date(Date.now() - Math.random() * 30 * 86400000).toISOString(),
+      url:      '#',
+    });
+    if (t.leaseStart) {
+      docs.push({
+        _id:      'd' + id++,
+        name:     `Lease Agreement — ${t.name}`,
+        type:     'Lease',
+        tenantId: { name: t.name },
+        propertyId: prop ? { name: prop.name } : null,
+        size:     Math.floor(Math.random() * 500 + 100) * 1024,
+        createdAt: new Date(t.leaseStart).toISOString(),
+        url:      '#',
+      });
+    }
+  });
+  docs.push({
+    _id: 'd' + id++, name: 'Society NOC — Meridian Tower', type: 'NOC',
+    tenantId: null, propertyId: { name: 'Meridian Tower — Unit 4B' },
+    size: 320 * 1024, createdAt: new Date(Date.now() - 10 * 86400000).toISOString(), url: '#',
+  });
+  return docs;
+}
+
+function renderStats(docs) {
+  const byType = {};
+  docs.forEach(d => byType[d.type] = (byType[d.type] || 0) + 1);
+  const totalSize = docs.reduce((s, d) => s + (d.size || 0), 0);
+
+  document.getElementById('docStats').innerHTML = [
+    { label:'Total Documents', value:docs.length,     icon:'📁', color:'teal'  },
+    { label:'Total Size',      value:fmtSize(totalSize), icon:'💾', color:'blue'  },
+    { label:'Aadhaar Docs',    value:byType['Aadhaar']||0, icon:'🪪', color:'green' },
+    { label:'Lease Docs',      value:byType['Lease']||0,   icon:'📄', color:'amber' },
+  ].map(k => `
+    <div class="kpi-card ${k.color}-glow">
+      <div class="kpi-card-bg"></div>
+      <div class="kpi-icon ${k.color}"><span style="font-size:18px">${k.icon}</span></div>
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-value">${k.value}</div>
+    </div>`).join('');
+}
+
+function fmtSize(bytes) {
+  if (bytes < 1024)       return bytes + ' B';
+  if (bytes < 1048576)    return (bytes/1024).toFixed(1) + ' KB';
+  return (bytes/1048576).toFixed(1) + ' MB';
+}
+
+function setView(v) {
+  currentView = v;
+  document.getElementById('viewGrid').style.background = v === 'grid' ? 'rgba(0,212,170,0.15)' : '';
+  document.getElementById('viewGrid').style.color = v === 'grid' ? 'var(--teal)' : '';
+  document.getElementById('viewList').style.background = v === 'list' ? 'rgba(0,212,170,0.15)' : '';
+  document.getElementById('viewList').style.color = v === 'list' ? 'var(--teal)' : '';
+  renderDocs(allDocs);
+}
+
+function renderDocs(docs) {
+  const search = document.getElementById('docSearch').value.toLowerCase();
+  let filtered = activeType ? docs.filter(d => d.type === activeType) : docs;
+  if (search) filtered = filtered.filter(d => d.name?.toLowerCase().includes(search) || d.tenantId?.name?.toLowerCase().includes(search));
+
+  if (!filtered.length) {
+    document.getElementById('docContainer').innerHTML = '<div class="empty-cell" style="padding:48px">No documents found</div>';
+    return;
+  }
+
+  if (currentView === 'grid') {
+    document.getElementById('docContainer').innerHTML = `<div class="doc-grid">${filtered.map(d => `
+      <div class="doc-card">
+        <div class="doc-card-icon ${getDemoDocClass(d.type)}">${TYPE_ICON[d.type] || '📎'}</div>
+        <div class="doc-card-name">${esc(d.name)}</div>
+        <div class="doc-card-meta">${d.tenantId?.name ? esc(d.tenantId.name) + ' · ' : ''}${fmtSize(d.size||0)}</div>
+        <div class="doc-card-meta" style="margin-top:2px">${fmtDate(d.createdAt)}</div>
+        <div class="doc-card-actions">
+          <a href="${d.url}" target="_blank" class="icon-btn teal" title="View" style="text-decoration:none">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </a>
+          <button class="icon-btn" title="Download" onclick="toast('Download requires backend API', 'info')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </button>
+          <button class="icon-btn red" title="Delete" onclick="deleteDoc('${d._id}')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+          </button>
+        </div>
+      </div>`).join('')}</div>`;
+  } else {
+    // List view
+    document.getElementById('docContainer').innerHTML = `
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>Name</th><th>Type</th><th>Tenant</th><th>Property</th><th>Size</th><th>Date</th><th>Actions</th></tr></thead>
+          <tbody>${filtered.map(d => `
+            <tr class="table-row-animated">
+              <td><span style="font-size:16px;margin-right:8px">${TYPE_ICON[d.type]||'📎'}</span><strong>${esc(d.name)}</strong></td>
+              <td>${statusPill(d.type)}</td>
+              <td>${esc(d.tenantId?.name || '—')}</td>
+              <td>${esc(d.propertyId?.name || '—')}</td>
+              <td>${fmtSize(d.size||0)}</td>
+              <td>${fmtDate(d.createdAt)}</td>
+              <td>
+                <div class="action-row">
+                  <a href="${d.url}" target="_blank" class="icon-btn" title="View"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></a>
+                  <button class="icon-btn red" title="Delete" onclick="deleteDoc('${d._id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg></button>
+                </div>
+              </td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>`;
+  }
+}
+
+function deleteDoc(id) {
+  if (!confirm('Delete this document?')) return;
+  allDocs = allDocs.filter(d => d._id !== id);
+  renderStats(allDocs);
+  renderDocs(allDocs);
+  toast('Document deleted', 'info');
+}
+
+document.getElementById('uploadZone').addEventListener('click', () => document.getElementById('upFile').click());
+document.getElementById('upFile').addEventListener('change', function() {
+  document.getElementById('upFileName').textContent = this.files[0]?.name || '';
+});
+
+async function uploadDoc() {
+  const name = document.getElementById('upName').value.trim();
+  const type = document.getElementById('upType').value;
+  const file = document.getElementById('upFile').files[0];
+  if (!name) { toast('Document name is required', 'error'); return; }
+
+  const newDoc = {
+    _id: 'd' + Date.now(),
+    name, type,
+    tenantId:   document.getElementById('upTenant').value   ? { name: document.getElementById('upTenant').options[document.getElementById('upTenant').selectedIndex].text }   : null,
+    propertyId: document.getElementById('upProperty').value ? { name: document.getElementById('upProperty').options[document.getElementById('upProperty').selectedIndex].text } : null,
+    size: file?.size || 0,
+    createdAt: new Date().toISOString(),
+    url: '#',
+  };
+
+  allDocs.unshift(newDoc);
+  renderStats(allDocs);
+  renderDocs(allDocs);
+  toast('Document uploaded (demo mode)', 'success');
+  closeAllModals();
+}
+
+// Populate selects
+function populateSelects() {
+  const tenants    = JSON.parse(localStorage.getItem('rpm_tenants') || '[]');
+  const properties = JSON.parse(localStorage.getItem('rpm_properties') || '[]');
+  document.getElementById('upTenant').innerHTML   = '<option value="">— None —</option>' + tenants.map(t=>`<option value="${t.id}">${t.name}</option>`).join('');
+  document.getElementById('upProperty').innerHTML = '<option value="">— None —</option>' + properties.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+}
+
+// Filter chips
+document.querySelectorAll('[data-dtype]').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('[data-dtype]').forEach(c=>c.classList.remove('active'));
+    chip.classList.add('active');
+    activeType = chip.dataset.dtype;
+    renderDocs(allDocs);
+  });
+});
+
+document.getElementById('docSearch').addEventListener('input', debounce(() => renderDocs(allDocs), 250));
+
+async function boot() {
+  ProModule.injectSidebar('documents');
+  ProModule.applyUserInfo();
+  await seedOnce();
+  populateSelects();
+
+  try {
+    const r = await API.get('/documents');
+    allDocs  = r?.data?.length ? r.data : buildDemoDocs();
+  } catch {
+    allDocs = buildDemoDocs();
+  }
+
+  renderStats(allDocs);
+  renderDocs(allDocs);
+}
+boot();
+</script>
+</body>
+</html>

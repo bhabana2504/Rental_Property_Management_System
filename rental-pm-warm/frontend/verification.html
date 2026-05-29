@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verification — Rental PM Pro</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/pro.css">
+</head>
+<body>
+<div class="app">
+  <div id="sidebarMount"></div>
+
+  <main class="main">
+    <header class="topbar">
+      <button class="hamburger" id="hamburger"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+      <div class="topbar-left">
+        <div class="topbar-title">Tenant Verification</div>
+        <div class="topbar-crumb">Aadhaar verification &amp; AI fraud risk detection</div>
+      </div>
+    </header>
+
+    <div class="page-content">
+      <!-- Risk summary cards -->
+      <div class="kpi-grid" id="riskKPIs"></div>
+
+      <!-- Verification list -->
+      <div class="glass-panel">
+        <div class="panel-head">
+          <span class="panel-head-title">🪪 Aadhaar Verification Status</span>
+          <div class="filter-mini">
+            <button class="filter-chip active" data-vfilter="">All</button>
+            <button class="filter-chip" data-vfilter="Pending">Pending</button>
+            <button class="filter-chip" data-vfilter="Submitted">Submitted</button>
+            <button class="filter-chip" data-vfilter="Verified">Verified</button>
+            <button class="filter-chip" data-vfilter="Rejected">Rejected</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr><th>Tenant</th><th>Property</th><th>Aadhaar Status</th><th>AI Risk Score</th><th>Risk Flags</th><th>Actions</th></tr>
+            </thead>
+            <tbody id="verifyBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Document upload -->
+      <div class="glass-panel">
+        <div class="panel-head">
+          <span class="panel-head-title">📎 Document Management</span>
+          <button class="btn btn-primary btn-sm" onclick="openModal('uploadDocModal')">Upload Document</button>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Document</th><th>Type</th><th>Tenant</th><th>Uploaded</th><th>Size</th><th>Actions</th></tr></thead>
+            <tbody id="docsBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Aadhaar Submit Modal -->
+<div class="modal-backdrop" id="aadhaarModal">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-head">
+      <span>Submit Aadhaar for Verification</span>
+      <button class="modal-close" onclick="closeAllModals()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-info">Only the last 4 digits of the Aadhaar number are stored. We comply with UIDAI data protection guidelines.</p>
+      <div class="form-group">
+        <label>Tenant</label>
+        <input type="text" id="aadhaarTenantName" class="form-control" readonly>
+        <input type="hidden" id="aadhaarTenantId">
+      </div>
+      <div class="form-group">
+        <label>Last 4 digits of Aadhaar *</label>
+        <input type="text" id="aadhaarLast4" class="form-control" maxlength="4" placeholder="e.g. 4321" pattern="\d{4}">
+      </div>
+      <div class="form-group">
+        <label>Upload Aadhaar document (PDF/Image)</label>
+        <div class="upload-zone" id="aadhaarUploadZone">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="32"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <p>Drop file here or <span class="upload-link">browse</span></p>
+          <small>PDF, JPG, PNG — max 10MB</small>
+          <input type="file" id="aadhaarFile" accept=".pdf,.jpg,.jpeg,.png" style="display:none">
+        </div>
+        <div id="aadhaarFileName" class="upload-filename"></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeAllModals()">Cancel</button>
+      <button class="btn btn-primary" onclick="submitAadhaar()">Submit for Verification</button>
+    </div>
+  </div>
+</div>
+
+<!-- Upload Document Modal -->
+<div class="modal-backdrop" id="uploadDocModal">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-head"><span>Upload Document</span><button class="modal-close" onclick="closeAllModals()">✕</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label>Document Name *</label><input type="text" id="docName" class="form-control" placeholder="e.g. Aadhaar Card — Priya Sharma"></div>
+      <div class="form-group">
+        <label>Document Type</label>
+        <select id="docType" class="form-control">
+          <option value="Aadhaar">Aadhaar</option><option value="PAN">PAN Card</option>
+          <option value="Lease">Lease</option><option value="NOC">NOC</option>
+          <option value="Receipt">Payment Receipt</option><option value="Photo">Photo</option><option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Tenant</label><select id="docTenantId" class="form-control"></select></div>
+      <div class="form-group">
+        <label>File *</label>
+        <div class="upload-zone" onclick="document.getElementById('docFile').click()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="28"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <p id="docFileLabel">Drop or click to upload</p>
+          <input type="file" id="docFile" style="display:none" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" onchange="document.getElementById('docFileLabel').textContent=this.files[0]?.name||'Drop or click to upload'">
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeAllModals()">Cancel</button>
+      <button class="btn btn-primary" onclick="uploadDocument()">Upload</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/app.js"></script>
+<script src="js/modules/api.js"></script>
+<script src="js/modules/pro.js"></script>
+<script>
+const RISK_LABELS = { low:'Low Risk', medium:'Medium Risk', high:'High Risk' };
+const RISK_COLORS = { low:'green', medium:'amber', high:'red' };
+
+function getRisk(score) {
+  if (score >= 50) return 'high';
+  if (score >= 25) return 'medium';
+  return 'low';
+}
+
+function renderRiskKPIs(tenants) {
+  const high   = tenants.filter(t => t.fraudRiskScore >= 50).length;
+  const medium = tenants.filter(t => t.fraudRiskScore >= 25 && t.fraudRiskScore < 50).length;
+  const low    = tenants.filter(t => t.fraudRiskScore < 25).length;
+  const verified = tenants.filter(t => t.aadhaarVerification?.status === 'Verified').length;
+
+  document.getElementById('riskKPIs').innerHTML = [
+    { label:'High Risk', value:high,     icon:'⚠️',  color:'red'   },
+    { label:'Medium Risk', value:medium, icon:'🔶',  color:'amber' },
+    { label:'Low Risk',  value:low,      icon:'✅',  color:'green' },
+    { label:'Aadhaar Verified', value:verified, icon:'🪪', color:'teal' },
+  ].map(k=>`
+    <div class="kpi-card ${k.color}-glow">
+      <div class="kpi-card-bg"></div>
+      <div class="kpi-icon ${k.color}"><span style="font-size:18px">${k.icon}</span></div>
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-value">${k.value}</div>
+    </div>`).join('');
+}
+
+function renderVerifyTable(tenants) {
+  const tbody = document.getElementById('verifyBody');
+  tbody.innerHTML = tenants.map(t => {
+    const vs    = t.aadhaarVerification?.status || 'Pending';
+    const risk  = getRisk(t.fraudRiskScore || 0);
+    const score = t.fraudRiskScore || 0;
+    const flags = (t.fraudRiskFlags || []).join(', ') || 'None';
+    const props = JSON.parse(localStorage.getItem('rpm_properties') || '[]');
+    const propName = props.find(p => p.id === t.propertyId)?.name || '—';
+    return `<tr class="table-row-animated">
+      <td><div class="tenant-cell"><div class="av av-${hashColor(t.name)}">${initials(t.name)}</div><div><strong>${esc(t.name)}</strong><small>${esc(t.email)}</small></div></div></td>
+      <td>${esc(propName)}</td>
+      <td>
+        <span class="pill pill-${vs==='Verified'?'green':vs==='Rejected'?'red':vs==='Submitted'?'blue':'muted'}">
+          <span class="pill-dot"></span>${vs}
+        </span>
+      </td>
+      <td>
+        <div class="risk-score-cell">
+          <div class="risk-bar"><div class="risk-fill" style="width:${score}%;background:${risk==='high'?'#ef4444':risk==='medium'?'#f59e0b':'#10b981'}"></div></div>
+          <span class="risk-num ${risk}">${score}</span>
+        </div>
+      </td>
+      <td><span class="flags-cell" title="${esc(flags)}">${flags.length > 40 ? flags.substring(0,40)+'…' : flags}</span></td>
+      <td>
+        <div class="action-row">
+          <button class="icon-btn teal" title="Submit Aadhaar" onclick="openAadhaarModal('${t.id}','${esc(t.name)}')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+          </button>
+          ${vs==='Submitted' ? `
+          <button class="icon-btn green" title="Approve" onclick="approveAadhaar('${t.id}')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg>
+          </button>
+          <button class="icon-btn red" title="Reject" onclick="rejectAadhaar('${t.id}')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>` : ''}
+        </div>
+      </td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="6" class="empty-cell">No tenants found</td></tr>`;
+}
+
+function renderDocs(docs) {
+  const tbody = document.getElementById('docsBody');
+  if (!docs.length) { tbody.innerHTML = `<tr><td colspan="6" class="empty-cell">No documents uploaded yet</td></tr>`; return; }
+  tbody.innerHTML = docs.map(d => `
+    <tr class="table-row-animated">
+      <td><strong>${esc(d.name)}</strong></td>
+      <td><span class="pill pill-blue"><span class="pill-dot"></span>${d.type||'Other'}</span></td>
+      <td>${esc(d.tenantId?.name || '—')}</td>
+      <td>${fmtDate(d.createdAt)}</td>
+      <td>${d.size ? (d.size/1024).toFixed(1)+'KB' : '—'}</td>
+      <td>
+        <div class="action-row">
+          <a href="${d.url}" target="_blank" class="icon-btn" title="View"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></a>
+          <button class="icon-btn red" title="Delete" onclick="deleteDoc('${d._id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg></button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function openAadhaarModal(id, name) {
+  document.getElementById('aadhaarTenantId').value   = id;
+  document.getElementById('aadhaarTenantName').value = name;
+  document.getElementById('aadhaarLast4').value = '';
+  openModal('aadhaarModal');
+}
+
+document.getElementById('aadhaarUploadZone').addEventListener('click', () => document.getElementById('aadhaarFile').click());
+document.getElementById('aadhaarFile').addEventListener('change', function() {
+  document.getElementById('aadhaarFileName').textContent = this.files[0]?.name || '';
+});
+
+async function submitAadhaar() {
+  const id   = document.getElementById('aadhaarTenantId').value;
+  const last4 = document.getElementById('aadhaarLast4').value;
+  if (!last4 || !/^\d{4}$/.test(last4)) { toast('Enter exactly 4 digits', 'error'); return; }
+  try {
+    const r = await API.post('/verification/aadhaar/' + id, { aadhaarLast4: last4 });
+    toast('Aadhaar submitted — Risk score: ' + (r.data?.fraudRiskScore || 0), 'success');
+    closeAllModals();
+    loadPage();
+  } catch(e) {
+    toast('Submitted (demo mode) — Risk analysis complete', 'success');
+    closeAllModals();
+  }
+}
+
+async function approveAadhaar(id) {
+  try {
+    await API.patch('/verification/aadhaar/'+id+'/approve', {});
+    toast('Aadhaar approved ✓', 'success');
+    loadPage();
+  } catch(e) { toast('Approved (demo mode)', 'success'); }
+}
+
+async function rejectAadhaar(id) {
+  const reason = prompt('Rejection reason:');
+  if (!reason) return;
+  try {
+    await API.patch('/verification/aadhaar/'+id+'/reject', { reason });
+    toast('Aadhaar rejected', 'info');
+    loadPage();
+  } catch(e) { toast('Rejected (demo mode)', 'info'); }
+}
+
+async function uploadDocument() {
+  const file    = document.getElementById('docFile').files[0];
+  const name    = document.getElementById('docName').value.trim();
+  const type    = document.getElementById('docType').value;
+  const tenant  = document.getElementById('docTenantId').value;
+  if (!name || !file) { toast('Name and file are required', 'error'); return; }
+
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('name', name);
+  fd.append('type', type);
+  if (tenant) fd.append('tenantId', tenant);
+
+  try {
+    await API.upload('/documents/upload', fd);
+    toast('Document uploaded', 'success');
+    closeAllModals();
+    loadDocs();
+  } catch(e) { toast('Upload requires backend API', 'info'); }
+}
+
+async function deleteDoc(id) {
+  if (!confirm('Delete this document?')) return;
+  try {
+    await API.delete('/documents/'+id);
+    toast('Deleted', 'success');
+    loadDocs();
+  } catch(e) { toast('Deleted (demo mode)', 'success'); }
+}
+
+async function loadDocs() {
+  try {
+    const r = await API.get('/documents');
+    renderDocs(r?.data || []);
+  } catch(e) { renderDocs([]); }
+}
+
+function populateTenantSelect() {
+  const tenants = JSON.parse(localStorage.getItem('rpm_tenants') || '[]');
+  document.getElementById('docTenantId').innerHTML = '<option value="">— Select tenant —</option>' +
+    tenants.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+}
+
+async function loadPage() {
+  const tenants = JSON.parse(localStorage.getItem('rpm_tenants') || '[]');
+  const enriched = tenants.map(t => ({
+    ...t,
+    aadhaarVerification: t.aadhaarVerification || { status: 'Pending' },
+    fraudRiskScore: t.fraudRiskScore || Math.floor(Math.random() * 40),
+    fraudRiskFlags: t.fraudRiskFlags || [],
+  }));
+  renderRiskKPIs(enriched);
+  renderVerifyTable(enriched);
+}
+
+// Filter chips
+document.querySelectorAll('[data-vfilter]').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('[data-vfilter]').forEach(c=>c.classList.remove('active'));
+    chip.classList.add('active');
+    // filter by aadhaar status
+    const filter = chip.dataset.vfilter;
+    const tenants = JSON.parse(localStorage.getItem('rpm_tenants') || '[]');
+    const enriched = tenants.map(t => ({...t, aadhaarVerification:{status:'Pending'}, fraudRiskScore:0}));
+    const filtered = filter ? enriched.filter(t=>t.aadhaarVerification.status===filter) : enriched;
+    renderVerifyTable(filtered);
+  });
+});
+
+async function boot() {
+  ProModule.injectSidebar('verification');
+  ProModule.applyUserInfo();
+  await seedOnce();
+  populateTenantSelect();
+  loadPage();
+  loadDocs();
+}
+boot();
+</script>
+</body>
+</html>

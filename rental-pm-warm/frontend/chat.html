@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Messages — Rental PM Pro</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/pro.css">
+</head>
+<body>
+<div class="app">
+  <div id="sidebarMount"></div>
+  <main class="main" style="padding:0; overflow:hidden;">
+    <header class="topbar">
+      <button class="hamburger" id="hamburger"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+      <div class="topbar-left">
+        <div class="topbar-title">Messages</div>
+        <div class="topbar-crumb">Direct communication with tenants &amp; owners</div>
+      </div>
+    </header>
+
+    <div class="chat-layout">
+      <!-- Sidebar: room list -->
+      <div class="chat-sidebar">
+        <div class="chat-search">
+          <div class="search-field" style="width:100%">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <input type="text" id="roomSearch" placeholder="Search conversations…">
+          </div>
+        </div>
+        <div class="chat-rooms" id="chatRooms"></div>
+      </div>
+
+      <!-- Main: message area -->
+      <div class="chat-main" id="chatMain">
+        <div class="chat-empty" id="chatEmpty">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          <p>Select a conversation to start messaging</p>
+        </div>
+
+        <div id="chatActive" style="display:none; flex-direction:column; height:100%; overflow:hidden;">
+          <div class="chat-header" id="chatHeader"></div>
+          <div class="chat-messages" id="chatMessages"></div>
+          <div class="chat-input-row">
+            <textarea class="chat-input" id="chatInput" placeholder="Type a message…" rows="1"
+              onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage()}"
+              oninput="autoResize(this)"></textarea>
+            <button class="chat-send" onclick="sendMessage()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="js/app.js"></script>
+<script src="js/modules/api.js"></script>
+<script src="js/modules/pro.js"></script>
+<script>
+let activeRoom   = null;
+let allMessages  = {};  // roomId → messages[]
+let rooms        = [];
+
+const AV_COLORS = ['#00d4aa','#3b82f6','#8b5cf6','#f59e0b','#ef4444','#10b981'];
+const avColor   = name => AV_COLORS[(name||'').charCodeAt(0) % AV_COLORS.length];
+
+function buildRooms() {
+  const tenants    = JSON.parse(localStorage.getItem('rpm_tenants') || '[]');
+  const properties = JSON.parse(localStorage.getItem('rpm_properties') || '[]');
+  const user       = JSON.parse(localStorage.getItem('rpm_user') || '{}');
+
+  rooms = tenants.map(t => ({
+    id:       'room_' + t.id,
+    tenantId: t.id,
+    name:     t.name,
+    email:    t.email,
+    property: properties.find(p => p.id === t.propertyId)?.name || '—',
+    unread:   Math.floor(Math.random() * 3),
+    lastMsg:  'Click to start messaging',
+    lastTime: new Date(Date.now() - Math.random() * 86400000 * 3).toISOString(),
+  }));
+
+  // Seed demo messages
+  rooms.forEach(r => {
+    if (!allMessages[r.id]) {
+      allMessages[r.id] = [
+        { id:'m1', senderId:'system', senderName:'System', senderRole:'system', message:`Chat room opened for ${r.name} — ${r.property}`, time: new Date(Date.now() - 7*24*3600000).toISOString() },
+        { id:'m2', senderId:'tenant', senderName:r.name, senderRole:'tenant', message:'Hello! I had a question about the maintenance request I filed last week.', time: new Date(Date.now() - 2*3600000).toISOString() },
+        { id:'m3', senderId:'owner',  senderName:'Admin Director', senderRole:'owner', message:"Hi! I saw that — our technician is scheduled for this Thursday between 10am–12pm. Will that work?", time: new Date(Date.now() - 1.8*3600000).toISOString() },
+      ];
+    }
+  });
+}
+
+function renderRooms(list) {
+  const search = document.getElementById('roomSearch').value.toLowerCase();
+  const filtered = search ? list.filter(r => r.name.toLowerCase().includes(search) || r.property.toLowerCase().includes(search)) : list;
+
+  document.getElementById('chatRooms').innerHTML = filtered.map(r => {
+    const msgs = allMessages[r.id] || [];
+    const last = msgs[msgs.length - 1];
+    return `
+      <div class="chat-room-item ${activeRoom?.id === r.id ? 'active' : ''}" onclick="openRoom('${r.id}')">
+        <div class="room-av" style="background:${avColor(r.name)}22;color:${avColor(r.name)}">${initials(r.name)}</div>
+        <div class="room-info">
+          <div class="room-name">${esc(r.name)}</div>
+          <div class="room-last">${esc(last?.message || r.lastMsg)}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+          <div class="room-time">${timeAgoShort(r.lastTime)}</div>
+          ${r.unread > 0 ? `<div class="room-badge">${r.unread}</div>` : ''}
+        </div>
+      </div>`;
+  }).join('') || '<div class="empty-cell">No conversations</div>';
+}
+
+function timeAgoShort(iso) {
+  const diff = (Date.now() - new Date(iso)) / 1000;
+  if (diff < 60) return 'now';
+  if (diff < 3600) return Math.floor(diff/60) + 'm';
+  if (diff < 86400) return Math.floor(diff/3600) + 'h';
+  return Math.floor(diff/86400) + 'd';
+}
+
+function openRoom(roomId) {
+  activeRoom = rooms.find(r => r.id === roomId);
+  if (!activeRoom) return;
+  activeRoom.unread = 0;
+
+  document.getElementById('chatEmpty').style.display  = 'none';
+  document.getElementById('chatActive').style.display = 'flex';
+
+  document.getElementById('chatHeader').innerHTML = `
+    <div class="room-av" style="background:${avColor(activeRoom.name)}22;color:${avColor(activeRoom.name)};width:38px;height:38px">${initials(activeRoom.name)}</div>
+    <div>
+      <div class="chat-title">${esc(activeRoom.name)}</div>
+      <div class="chat-sub">${esc(activeRoom.property)}</div>
+    </div>
+    <div style="margin-left:auto;display:flex;gap:8px">
+      <button class="icon-btn" title="View tenant" onclick="window.location.href='tenants.html'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+      </button>
+    </div>`;
+
+  renderMessages(allMessages[roomId] || []);
+  renderRooms(rooms);
+  document.getElementById('chatInput').focus();
+}
+
+function renderMessages(msgs) {
+  const user = JSON.parse(localStorage.getItem('rpm_user') || '{}');
+  const isOwnerOrAdmin = !user.role || user.role === 'owner' || user.role === 'admin' || user.role === 'staff';
+
+  const container = document.getElementById('chatMessages');
+  container.innerHTML = msgs.map(m => {
+    const isOwn = isOwnerOrAdmin ? (m.senderRole !== 'tenant') : (m.senderRole === 'tenant');
+    const isSystem = m.senderRole === 'system';
+
+    if (isSystem) {
+      return `<div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.25);padding:4px 0">${esc(m.message)}</div>`;
+    }
+    return `
+      <div class="chat-msg ${isOwn ? 'own' : ''}">
+        <div class="msg-av" style="background:${avColor(m.senderName)}22;color:${avColor(m.senderName)}">${initials(m.senderName)}</div>
+        <div class="msg-body">
+          <div class="msg-bubble">${esc(m.message)}</div>
+          <div class="msg-meta">${esc(m.senderName)} · ${timeAgoShort(m.time)}</div>
+        </div>
+      </div>`;
+  }).join('');
+  container.scrollTop = container.scrollHeight;
+}
+
+async function sendMessage() {
+  if (!activeRoom) return;
+  const input = document.getElementById('chatInput');
+  const text  = input.value.trim();
+  if (!text) return;
+
+  const user = JSON.parse(localStorage.getItem('rpm_user') || '{}');
+  const msg  = {
+    id: 'm' + Date.now(),
+    senderId:   user.id || 'owner',
+    senderName: user.name || 'Admin Director',
+    senderRole: user.role || 'owner',
+    message:    text,
+    time:       new Date().toISOString(),
+  };
+
+  if (!allMessages[activeRoom.id]) allMessages[activeRoom.id] = [];
+  allMessages[activeRoom.id].push(msg);
+
+  input.value = '';
+  input.style.height = '';
+  renderMessages(allMessages[activeRoom.id]);
+  activeRoom.lastMsg = text;
+  renderRooms(rooms);
+
+  // Try to persist via API
+  try {
+    await API.post('/chat', { roomId: activeRoom.id, message: text });
+  } catch { /* demo mode */ }
+
+  // Demo: auto-reply after 2s
+  if (Math.random() > 0.5) {
+    const replies = [
+      "Thanks for the update! I'll check and get back to you.",
+      "Got it, I'll be available during that time.",
+      "Sure, please let me know when the work is completed.",
+      "Thank you! I'll share the payment receipt shortly.",
+      "Understood. Is there anything else I need to do?",
+    ];
+    setTimeout(() => {
+      const reply = {
+        id: 'm' + Date.now(),
+        senderId:   activeRoom.tenantId,
+        senderName: activeRoom.name,
+        senderRole: 'tenant',
+        message:    replies[Math.floor(Math.random() * replies.length)],
+        time:       new Date().toISOString(),
+      };
+      allMessages[activeRoom.id].push(reply);
+      renderMessages(allMessages[activeRoom.id]);
+      activeRoom.unread = 0;
+      renderRooms(rooms);
+    }, 1800 + Math.random() * 1200);
+  }
+}
+
+function autoResize(el) {
+  el.style.height = '';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+document.getElementById('roomSearch').addEventListener('input', debounce(() => renderRooms(rooms), 200));
+
+async function boot() {
+  ProModule.injectSidebar('chat');
+  ProModule.applyUserInfo();
+  await seedOnce();
+  buildRooms();
+  renderRooms(rooms);
+}
+boot();
+</script>
+</body>
+</html>

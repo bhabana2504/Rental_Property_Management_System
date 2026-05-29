@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In — Rental PM Pro</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/pro.css">
+</head>
+<body class="auth-body">
+
+<div class="auth-split">
+  <!-- Left panel -->
+  <div class="auth-brand">
+    <div class="auth-brand-inner">
+      <div class="auth-logo">
+        <svg viewBox="0 0 48 48" fill="none"><rect width="48" height="48" rx="12" fill="#2D6A4F" fill-opacity="0.15"/><path d="M12 38V18l12-9 12 9v20" stroke="#2D6A4F" stroke-width="2" stroke-linecap="round"/><path d="M20 38v-9h8v9" stroke="#2D6A4F" stroke-width="2" stroke-linecap="round"/><circle cx="24" cy="14" r="2.5" fill="#2D6A4F"/></svg>
+      </div>
+      <h1>Rental PM <span>Pro</span></h1>
+      <p>Production-grade property intelligence platform with AI-powered fraud detection, Aadhaar verification, and real-time analytics.</p>
+      <ul class="auth-features">
+        <li><span class="af-icon">🔒</span>Multi-role JWT authentication</li>
+        <li><span class="af-icon">🪪</span>Aadhaar-based tenant verification</li>
+        <li><span class="af-icon">🤖</span>AI fraud risk detection</li>
+        <li><span class="af-icon">📊</span>Real-time analytics dashboard</li>
+        <li><span class="af-icon">📄</span>Automated lease PDF generation</li>
+        <li><span class="af-icon">🔔</span>Smart rent reminders</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Right panel -->
+  <div class="auth-form-side">
+    <div class="auth-card">
+      <div class="auth-tab-row">
+        <button class="auth-tab active" id="tabLogin">Sign In</button>
+        <button class="auth-tab" id="tabRegister">Register</button>
+      </div>
+
+      <!-- Login Form -->
+      <div id="loginForm">
+        <div class="auth-welcome">
+          <h2>Welcome back</h2>
+          <p>Sign in to your property management dashboard</p>
+        </div>
+
+        <div class="form-group">
+          <label>Email address</label>
+          <input type="email" id="loginEmail" class="form-control" placeholder="admin@rentalpm.com" autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <div class="input-pw">
+            <input type="password" id="loginPassword" class="form-control" placeholder="••••••••" autocomplete="current-password">
+            <button class="pw-toggle" onclick="togglePw('loginPassword',this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Role</label>
+          <select id="loginRole" class="form-control">
+            <option value="admin">Admin</option>
+            <option value="owner" selected>Property Owner</option>
+            <option value="tenant">Tenant</option>
+            <option value="staff">Staff</option>
+          </select>
+        </div>
+
+        <!-- Demo accounts -->
+        <div class="demo-accounts">
+          <p class="demo-label">Quick demo access:</p>
+          <div class="demo-pills">
+            <button class="demo-pill" onclick="fillDemo('admin')">Admin</button>
+            <button class="demo-pill" onclick="fillDemo('owner')">Owner</button>
+            <button class="demo-pill" onclick="fillDemo('tenant')">Tenant</button>
+          </div>
+        </div>
+
+        <button class="btn btn-primary btn-full" id="loginBtn" onclick="handleLogin()">
+          <span id="loginSpinner" class="btn-spinner" style="display:none"></span>
+          Sign In
+        </button>
+      </div>
+
+      <!-- Register Form -->
+      <div id="registerForm" style="display:none">
+        <div class="auth-welcome">
+          <h2>Create account</h2>
+          <p>Set up your property management workspace</p>
+        </div>
+        <div class="form-group">
+          <label>Full name</label>
+          <input type="text" id="regName" class="form-control" placeholder="Arjun Sharma">
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="regEmail" class="form-control" placeholder="arjun@example.com">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <div class="input-pw">
+            <input type="password" id="regPassword" class="form-control" placeholder="Min 8 chars, upper+lower+number">
+            <button class="pw-toggle" onclick="togglePw('regPassword',this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <div class="pw-strength" id="pwStrength"></div>
+        </div>
+        <div class="form-group">
+          <label>Role</label>
+          <select id="regRole" class="form-control">
+            <option value="owner">Property Owner</option>
+            <option value="staff">Staff</option>
+            <option value="tenant">Tenant</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Phone (optional)</label>
+          <input type="tel" id="regPhone" class="form-control" placeholder="+91 98765 43210">
+        </div>
+        <button class="btn btn-primary btn-full" onclick="handleRegister()">
+          <span id="regSpinner" class="btn-spinner" style="display:none"></span>
+          Create Account
+        </button>
+      </div>
+
+      <p class="auth-footer">By continuing you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a></p>
+    </div>
+  </div>
+</div>
+
+<script src="js/app.js"></script>
+<script src="js/modules/api.js"></script>
+<script>
+  // Tab switching
+  document.getElementById('tabLogin').addEventListener('click', () => {
+    document.getElementById('loginForm').style.display = '';
+    document.getElementById('registerForm').style.display = 'none';
+    document.getElementById('tabLogin').classList.add('active');
+    document.getElementById('tabRegister').classList.remove('active');
+  });
+  document.getElementById('tabRegister').addEventListener('click', () => {
+    document.getElementById('loginForm').style.display = 'none';
+    document.getElementById('registerForm').style.display = '';
+    document.getElementById('tabLogin').classList.remove('active');
+    document.getElementById('tabRegister').classList.add('active');
+  });
+
+  function togglePw(id, btn) {
+    const inp = document.getElementById(id);
+    inp.type = inp.type === 'password' ? 'text' : 'password';
+    btn.classList.toggle('active');
+  }
+
+  function fillDemo(role) {
+    const demos = {
+      admin:  { email: 'admin@rentalpm.com',  password: 'Admin@123456',  role: 'admin'  },
+      owner:  { email: 'owner@rentalpm.com',  password: 'Owner@123456',  role: 'owner'  },
+      tenant: { email: 'tenant@rentalpm.com', password: 'Tenant@123456', role: 'tenant' },
+    };
+    const d = demos[role];
+    document.getElementById('loginEmail').value    = d.email;
+    document.getElementById('loginPassword').value = d.password;
+    document.getElementById('loginRole').value     = d.role;
+  }
+
+  // Password strength
+  document.getElementById('regPassword')?.addEventListener('input', function() {
+    const val = this.value;
+    let strength = 0;
+    if (val.length >= 8) strength++;
+    if (/[A-Z]/.test(val)) strength++;
+    if (/[a-z]/.test(val)) strength++;
+    if (/\d/.test(val)) strength++;
+    if (/[^A-Za-z0-9]/.test(val)) strength++;
+    const labels = ['', 'Weak', 'Fair', 'Good', 'Strong', 'Very Strong'];
+    const colors = ['', '#ef4444', '#f59e0b', '#3b82f6', '#10b981', '#00d4aa'];
+    const el = document.getElementById('pwStrength');
+    el.innerHTML = val.length > 0 ? `<div class="pw-bar" style="width:${strength*20}%;background:${colors[strength]}"></div><span>${labels[strength]}</span>` : '';
+  });
+
+  async function handleLogin() {
+    const email    = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    const role     = document.getElementById('loginRole').value;
+
+    if (!email || !password) { toast('Please fill in all fields', 'error'); return; }
+
+    const btn = document.getElementById('loginBtn');
+    const sp  = document.getElementById('loginSpinner');
+    btn.disabled = true; sp.style.display = 'inline-block';
+
+    try {
+      const result = await API.post('/auth/login', { email, password });
+      if (result.success) {
+        localStorage.setItem('rpm_token', result.data.accessToken);
+        localStorage.setItem('rpm_user',  JSON.stringify(result.data.user));
+        toast('Welcome back, ' + result.data.user.name + '!', 'success');
+        setTimeout(() => { window.location.href = 'index.html'; }, 800);
+      } else {
+        // Demo mode: use localStorage auth
+        const demoUser = { name: email.split('@')[0], email, role, id: 'demo' };
+        localStorage.setItem('rpm_user', JSON.stringify(demoUser));
+        localStorage.setItem('rpm_token', 'demo-token');
+        toast('Signed in (demo mode)', 'success');
+        setTimeout(() => { window.location.href = 'index.html'; }, 800);
+      }
+    } catch(e) {
+      // Demo fallback
+      const demoUser = { name: email.split('@')[0], email, role, id: 'demo' };
+      localStorage.setItem('rpm_user', JSON.stringify(demoUser));
+      localStorage.setItem('rpm_token', 'demo-token');
+      toast('Signed in (offline demo mode)', 'success');
+      setTimeout(() => { window.location.href = 'index.html'; }, 800);
+    } finally {
+      btn.disabled = false; sp.style.display = 'none';
+    }
+  }
+
+  async function handleRegister() {
+    const name     = document.getElementById('regName').value.trim();
+    const email    = document.getElementById('regEmail').value.trim();
+    const password = document.getElementById('regPassword').value;
+    const role     = document.getElementById('regRole').value;
+    const phone    = document.getElementById('regPhone').value.trim();
+
+    if (!name || !email || !password) { toast('Please fill required fields', 'error'); return; }
+    if (password.length < 8) { toast('Password must be at least 8 characters', 'error'); return; }
+
+    try {
+      const result = await API.post('/auth/register', { name, email, password, role, phone });
+      if (result.success) {
+        localStorage.setItem('rpm_token', result.data.accessToken);
+        localStorage.setItem('rpm_user',  JSON.stringify(result.data.user));
+        toast('Account created! Welcome, ' + name + '!', 'success');
+        setTimeout(() => { window.location.href = 'index.html'; }, 800);
+      } else {
+        toast(result.message || 'Registration failed', 'error');
+      }
+    } catch(e) {
+      toast('Registration unavailable in demo mode', 'error');
+    }
+  }
+
+  // Enter key support
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      if (document.getElementById('loginForm').style.display !== 'none') handleLogin();
+      else handleRegister();
+    }
+  });
+</script>
+</body>
+</html>

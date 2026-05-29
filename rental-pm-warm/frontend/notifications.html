@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notifications — Rental PM Pro</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/pro.css">
+</head>
+<body>
+<div class="app">
+  <div id="sidebarMount"></div>
+  <main class="main">
+    <header class="topbar">
+      <button class="hamburger" id="hamburger"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+      <div class="topbar-left">
+        <div class="topbar-title">Notifications</div>
+        <div class="topbar-crumb">System alerts, reminders &amp; updates</div>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-ghost" onclick="markAllRead()">Mark all read</button>
+        <button class="btn btn-ghost" onclick="clearAll()">Clear all</button>
+      </div>
+    </header>
+
+    <div class="page-content">
+      <div class="filter-bar">
+        <button class="filter-chip active" data-ntype="">All</button>
+        <button class="filter-chip" data-ntype="payment">Payments</button>
+        <button class="filter-chip" data-ntype="lease">Leases</button>
+        <button class="filter-chip" data-ntype="maintenance">Maintenance</button>
+        <button class="filter-chip" data-ntype="verification">Verification</button>
+        <button class="filter-chip" data-ntype="alert">Alerts</button>
+      </div>
+
+      <div class="glass-panel">
+        <div class="panel-head">
+          <span class="panel-head-title">🔔 Notifications</span>
+          <span class="panel-head-count" id="notifCount"></span>
+        </div>
+        <div id="notifList" class="notif-list"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="js/app.js"></script>
+<script src="js/modules/api.js"></script>
+<script src="js/modules/pro.js"></script>
+<script>
+const NOTIF_ICONS = { payment:'💳', lease:'📄', maintenance:'🔧', verification:'🪪', alert:'⚠️', system:'⚙️' };
+
+let allNotifs = [];
+let activeType = '';
+
+function getDemoNotifications() {
+  const tenants    = JSON.parse(localStorage.getItem('rpm_tenants') || '[]');
+  const properties = JSON.parse(localStorage.getItem('rpm_properties') || '[]');
+  const payments   = JSON.parse(localStorage.getItem('rpm_payments') || '[]');
+  const maint      = JSON.parse(localStorage.getItem('rpm_maintenance') || '[]');
+
+  const notifs = [];
+  let id = 1;
+
+  // Pending payments
+  payments.filter(p => p.status === 'Pending').forEach(p => {
+    const t = tenants.find(t => t.id === p.tenantId);
+    const prop = properties.find(pr => pr.id === p.propertyId);
+    notifs.push({
+      id: 'n' + id++, type: 'payment', isRead: false,
+      title: '💰 Pending Rent Due',
+      message: `${t?.name || 'Tenant'} has a pending payment of ${fmtMoney(p.amount)} for ${p.month} — ${prop?.name || ''}`,
+      time: new Date(Date.now() - 2 * 3600000).toISOString(),
+      priority: 'high',
+    });
+  });
+
+  // Expiring leases
+  tenants.forEach(t => {
+    if (!t.leaseEnd) return;
+    const days = Math.ceil((new Date(t.leaseEnd) - new Date()) / 86400000);
+    if (days > 0 && days < 45) {
+      notifs.push({
+        id: 'n' + id++, type: 'lease', isRead: false,
+        title: '⏰ Lease Expiring Soon',
+        message: `${t.name}'s lease expires in ${days} days (${fmtDate(t.leaseEnd)})`,
+        time: new Date(Date.now() - 5 * 3600000).toISOString(),
+        priority: 'high',
+      });
+    }
+  });
+
+  // Open maintenance
+  maint.filter(m => m.status !== 'Completed').forEach(m => {
+    const prop = properties.find(p => p.id === m.propertyId);
+    notifs.push({
+      id: 'n' + id++, type: 'maintenance', isRead: m.priority !== 'High',
+      title: `🔧 ${m.priority} Priority Ticket`,
+      message: `"${m.title}" at ${prop?.name || 'property'} — Status: ${m.status}`,
+      time: new Date(Date.now() - 12 * 3600000).toISOString(),
+      priority: m.priority === 'High' ? 'high' : 'medium',
+    });
+  });
+
+  // System notifications
+  notifs.push({
+    id: 'n' + id++, type: 'system', isRead: true,
+    title: '✅ Platform Upgraded',
+    message: 'Rental PM Pro v2.0 is live. New features: Aadhaar verification, AI fraud detection, lease PDF generation, and analytics dashboard.',
+    time: new Date(Date.now() - 24 * 3600000).toISOString(),
+    priority: 'low',
+  });
+  notifs.push({
+    id: 'n' + id++, type: 'verification', isRead: true,
+    title: '🪪 Aadhaar Verification Ready',
+    message: 'Tenant verification module is active. Submit Aadhaar details from the Verification page.',
+    time: new Date(Date.now() - 48 * 3600000).toISOString(),
+    priority: 'medium',
+  });
+  notifs.push({
+    id: 'n' + id++, type: 'alert', isRead: true,
+    title: '⚠️ Fraud Risk Alert',
+    message: 'AI risk engine flagged 1 tenant with medium fraud risk. Review in Verification → Fraud Report.',
+    time: new Date(Date.now() - 72 * 3600000).toISOString(),
+    priority: 'high',
+  });
+
+  return notifs.sort((a, b) => new Date(b.time) - new Date(a.time));
+}
+
+function timeAgo(iso) {
+  const diff = (Date.now() - new Date(iso)) / 1000;
+  if (diff < 60)   return 'Just now';
+  if (diff < 3600) return Math.floor(diff/60) + 'm ago';
+  if (diff < 86400)return Math.floor(diff/3600) + 'h ago';
+  return Math.floor(diff/86400) + 'd ago';
+}
+
+function renderNotifications(notifs) {
+  const filtered = activeType ? notifs.filter(n => n.type === activeType) : notifs;
+  const unread   = filtered.filter(n => !n.isRead).length;
+  document.getElementById('notifCount').textContent = `${filtered.length} total · ${unread} unread`;
+
+  if (!filtered.length) {
+    document.getElementById('notifList').innerHTML = `<div class="empty-cell" style="padding:48px">No notifications</div>`;
+    return;
+  }
+
+  document.getElementById('notifList').innerHTML = filtered.map(n => `
+    <div class="notif-item ${n.isRead ? '' : 'unread'}" onclick="markRead('${n.id}')">
+      <div class="notif-icon ${n.type}">${NOTIF_ICONS[n.type] || '🔔'}</div>
+      <div class="notif-content">
+        <div class="notif-title">${esc(n.title)}</div>
+        <div class="notif-msg">${esc(n.message)}</div>
+        <div class="notif-time">${timeAgo(n.time)}</div>
+      </div>
+      ${!n.isRead ? '<div class="notif-unread-dot"></div>' : ''}
+    </div>`).join('');
+}
+
+function markRead(id) {
+  const n = allNotifs.find(n => n.id === id);
+  if (n) n.isRead = true;
+  renderNotifications(allNotifs);
+}
+
+function markAllRead() {
+  allNotifs.forEach(n => n.isRead = true);
+  renderNotifications(allNotifs);
+  toast('All notifications marked as read', 'success');
+}
+
+function clearAll() {
+  if (!confirm('Clear all notifications?')) return;
+  allNotifs = [];
+  renderNotifications([]);
+  toast('Notifications cleared', 'info');
+}
+
+document.querySelectorAll('[data-ntype]').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('[data-ntype]').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    activeType = chip.dataset.ntype;
+    renderNotifications(allNotifs);
+  });
+});
+
+async function boot() {
+  ProModule.injectSidebar('notifications');
+  ProModule.applyUserInfo();
+  await seedOnce();
+
+  try {
+    const r = await API.get('/notifications');
+    allNotifs = r?.data || getDemoNotifications();
+  } catch {
+    allNotifs = getDemoNotifications();
+  }
+  renderNotifications(allNotifs);
+}
+boot();
+</script>
+</body>
+</html>

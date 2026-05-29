@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rental Property Management</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/pro.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="app">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-logo">
+        <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="36" height="36" rx="8" fill="#2D6A4F" fill-opacity="0.10"/>
+          <rect x="1" y="1" width="34" height="34" rx="7" stroke="#2D6A4F" stroke-opacity="0.25" stroke-width="1"/>
+          <path d="M10 26V14l8-6 8 6v12" stroke="#2D6A4F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M15 26v-6h6v6" stroke="#2D6A4F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="18" cy="11" r="1.5" fill="#2D6A4F"/>
+        </svg>
+      </div>
+      <div class="brand-wordmark">
+        <strong>Rental PM</strong>
+        <span>Property Management System</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section">Overview</div>
+
+      <a href="index.html" class="nav-link">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+        </span>
+        <span class="nav-label-text">Dashboard</span>
+      </a>
+
+      <div class="nav-section" style="margin-top:8px;">Management</div>
+
+      <a href="properties.html" class="nav-link">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </span>
+        <span class="nav-label-text">Properties</span>
+      </a>
+
+      <a href="tenants.html" class="nav-link">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        </span>
+        <span class="nav-label-text">Tenants</span>
+      </a>
+
+      <a href="payments.html" class="nav-link">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        </span>
+        <span class="nav-label-text">Payments</span>
+      </a>
+
+      <a href="maintenance.html" class="nav-link">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
+        </span>
+        <span class="nav-label-text">Maintenance</span>
+        <span class="nav-badge" id="maintBadge">0</span>
+      </a>
+
+      <div class="nav-section" style="margin-top:8px;">Compliance</div>
+
+      <a href="leases.html" class="nav-link">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        </span>
+        <span class="nav-label-text">Leases</span>
+      </a>
+
+      <a href="verification.html" class="nav-link">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </span>
+        <span class="nav-label-text">Verification</span>
+      </a>
+
+      <a href="documents.html" class="nav-link">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+        </span>
+        <span class="nav-label-text">Documents</span>
+      </a>
+
+      <div class="nav-section" style="margin-top:8px;">System</div>
+
+      <a href="analytics.html" class="nav-link">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        </span>
+        <span class="nav-label-text">Analytics</span>
+      </a>
+
+      <a href="notifications.html" class="nav-link">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+        </span>
+        <span class="nav-label-text">Notifications</span>
+        <span class="nav-badge">3</span>
+      </a>
+
+      <a href="chat.html" class="nav-link">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        </span>
+        <span class="nav-label-text">Messages</span>
+      </a>
+
+      <a href="login.html" class="nav-link" id="logoutNavLink">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        </span>
+        <span class="nav-label-text">Sign Out</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="user-avatar">AD</div>
+        <div class="user-meta">
+          <strong>Admin Director</strong>
+          <span>Portfolio Manager</span>
+        </div>
+        <div class="online-dot"></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══ MAIN ═══ -->
+  <main class="main">
+    <header class="topbar">
+      <button class="hamburger" id="hamburger">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="topbar-left">
+        <div class="topbar-title">Dashboard</div>
+        <div class="topbar-crumb">Good day — here's your portfolio intelligence overview</div>
+      </div>
+      <div class="topbar-actions">
+        <div class="search-field">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          <input type="text" placeholder="Search across everything…" />
+        </div>
+      </div>
+    </header>
+
+    <div class="page-content">
+
+      <!-- KPI Row -->
+      <div class="kpi-grid">
+        <div class="kpi-card teal-glow">
+          <div class="kpi-card-bg"></div>
+          <div class="kpi-icon teal">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          </div>
+          <div class="kpi-label">Total Properties</div>
+          <div class="kpi-value" id="kpiProps">—</div>
+          <div class="kpi-sub" id="kpiPropsub"></div>
+        </div>
+
+        <div class="kpi-card green-glow">
+          <div class="kpi-card-bg"></div>
+          <div class="kpi-icon green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+          </div>
+          <div class="kpi-label">Occupied Units</div>
+          <div class="kpi-value" id="kpiOccupied">—</div>
+          <div class="kpi-sub" id="kpiOccSub"></div>
+        </div>
+
+        <div class="kpi-card blue-glow">
+          <div class="kpi-card-bg"></div>
+          <div class="kpi-icon blue">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+          </div>
+          <div class="kpi-label">Active Tenants</div>
+          <div class="kpi-value" id="kpiTenants">—</div>
+          <div class="kpi-sub" id="kpiTenantSub"></div>
+        </div>
+
+        <div class="kpi-card amber-glow">
+          <div class="kpi-card-bg"></div>
+          <div class="kpi-icon amber">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+          </div>
+          <div class="kpi-label">Monthly Revenue</div>
+          <div class="kpi-value" style="font-size:26px;" id="kpiRevenue">—</div>
+          <div class="kpi-sub" id="kpiRevenueSub"></div>
+        </div>
+      </div>
+
+      <!-- Bottom split -->
+      <!-- Revenue Chart -->
+      <div class="glass-panel" style="margin-bottom:20px">
+        <div class="panel-head">
+          <span class="panel-head-title">📈 Revenue Overview</span>
+          <a href="analytics.html" class="panel-head-link">Full analytics →</a>
+        </div>
+        <div style="padding:0 20px 20px;height:220px;position:relative">
+          <canvas id="dashRevenueChart"></canvas>
+        </div>
+      </div>
+
+      <div class="dash-split">
+        <div class="glass-panel">
+          <div class="panel-head">
+            <span class="panel-head-title">Recent Activity</span>
+            <a href="payments.html" class="panel-head-link">View all →</a>
+          </div>
+          <div class="panel-body" id="activityFeed"></div>
+        </div>
+
+        <div class="glass-panel">
+          <div class="panel-head">
+            <span class="panel-head-title">Open Maintenance</span>
+            <a href="maintenance.html" class="panel-head-link">View all →</a>
+          </div>
+          <div class="panel-body" id="openMaint"></div>
+        </div>
+      </div>
+
+      <!-- Quick-access new modules -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-top:20px">
+        <a href="leases.html"       class="quick-module-card">📄 Lease Manager</a>
+        <a href="verification.html" class="quick-module-card">🪪 Aadhaar Verification</a>
+        <a href="analytics.html"    class="quick-module-card">📊 Analytics Dashboard</a>
+        <a href="documents.html"    class="quick-module-card">📁 Document Vault</a>
+        <a href="notifications.html"class="quick-module-card">🔔 Notifications</a>
+        <a href="chat.html"         class="quick-module-card">💬 Tenant Chat</a>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<style>
+.quick-module-card {
+  display:flex; align-items:center; gap:10px;
+  background:rgba(139,110,72,0.06); border:1px solid rgba(139,110,72,0.16);
+  border-radius:12px; padding:16px 18px; font-size:14px; font-weight:600;
+  color:#5A4733; text-decoration:none; transition:all 0.2s;
+}
+.quick-module-card:hover { background:rgba(45,106,79,0.07); border-color:rgba(45,106,79,0.24); color:#fff; transform:translateY(-2px); }
+</style>
+
+<script src="js/app.js"></script>
+<script src="js/modules/api.js"></script>
+<script src="js/modules/pro.js"></script>
+<script>
+// Inject pro sidebar on dashboard
+document.addEventListener('DOMContentLoaded', () => {
+  ProModule.injectSidebar('index');
+  ProModule.applyUserInfo();
+});
+
+// Revenue mini-chart after app.js boot
+window.addEventListener('load', () => {
+  const ctx = document.getElementById('dashRevenueChart');
+  if (!ctx || typeof Chart === 'undefined') return;
+  const payments = JSON.parse(localStorage.getItem('rpm_payments') || '[]');
+  const months   = ['Oct','Nov','Dec','Jan','Feb','Mar'];
+  const collected = [430000, 468000, 38000, 508000, 490000, payments.filter(p=>p.status==='Paid').reduce((s,p)=>s+p.amount,0)];
+  const pending   = [0, 0, 430000, 0, 18000, payments.filter(p=>p.status==='Pending').reduce((s,p)=>s+p.amount,0)];
+
+  const grad = ctx.getContext('2d').createLinearGradient(0,0,0,200);
+  grad.addColorStop(0,'rgba(45,106,79,0.18)');
+  grad.addColorStop(1,'rgba(45,106,79,0)');
+
+  new Chart(ctx, {
+    type:'line',
+    data:{
+      labels: months,
+      datasets:[
+        { label:'Collected', data:collected, borderColor:'#2D6A4F', backgroundColor:grad, tension:0.4, fill:true, pointBackgroundColor:'#2D6A4F', pointRadius:4 },
+        { label:'Pending',   data:pending,   borderColor:'#C07828', backgroundColor:'transparent', tension:0.4, borderDash:[5,3], pointRadius:3 },
+      ],
+    },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{
+      y:{ beginAtZero:true, ticks:{callback:v=>'₹'+(v/1000)+'k', color:'#8B7355'}, grid:{color:'rgba(139,110,72,0.06)'}},
+      x:{ ticks:{color:'#8B7355'}, grid:{display:false}},
+    }},
+  });
+});
+</script>
+</body>
+</html>
