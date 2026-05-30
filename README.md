@@ -1,4 +1,4 @@
-# Rental PM Pro — Production-Grade Property Management Platform
+# Rental Property Management System
 
 > A highly scalable, full-stack rental property management platform designed with a warm, premium aesthetic. Features multi-role authentication, Aadhaar verification, AI-powered fraud risk scoring, lease agreement generation, secure document vaults, real-time simulated chat, and interactive financial analytics.
 
