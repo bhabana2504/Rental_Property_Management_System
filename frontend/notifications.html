@@ -68,7 +68,7 @@ function getDemoNotifications() {
     const prop = properties.find(pr => pr.id === p.propertyId);
     notifs.push({
       id: 'n' + id++, type: 'payment', isRead: false,
-      title: '💰 Pending Rent Due',
+      title: ' Pending Rent Due',
       message: `${t?.name || 'Tenant'} has a pending payment of ${fmtMoney(p.amount)} for ${p.month} — ${prop?.name || ''}`,
       time: new Date(Date.now() - 2 * 3600000).toISOString(),
       priority: 'high',
