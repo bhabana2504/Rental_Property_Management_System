@@ -1,12 +1,13 @@
 # Rental Property Management System
 
  A highly scalable, full-stack rental property management platform designed with a warm, premium aesthetic. Features multi-role authentication, Aadhaar verification, AI-powered fraud risk scoring, lease agreement generation, secure document vaults, real-time simulated chat, and interactive financial analytics.
+### Live Preview : https://rental-property-management-system.vercel.app/
 
 ---
 
 ##  System Architecture
 
-Rental PM Pro is designed with a decoupled **Client-Server (Full-Stack) Architecture** that provides high resilience. If the central database is offline, the client seamlessly falls back to a high-fidelity **Offline Demo Mode** leveraging browser `localStorage` and seed files, ensuring zero downtime for client-side evaluation.
+Rental PM Pro is designed with a decoupled **Client-Server (Full-Stack) Architecture** that provides high resilience. If the central database is offline, the client seamlessly falls back to a high-fidelity **Offline Demo Mode** leveraging browser `localStorage` and seed files, ensuring zero downti  me for client-side evaluation.
 
 ```mermaid
 graph TD
