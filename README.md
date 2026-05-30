@@ -1,4 +1,4 @@
-# 🏢 Rental PM Pro — Production-Grade Property Management Platform
+# Rental PM Pro — Production-Grade Property Management Platform
 
 > A highly scalable, full-stack rental property management platform designed with a warm, premium aesthetic. Features multi-role authentication, Aadhaar verification, AI-powered fraud risk scoring, lease agreement generation, secure document vaults, real-time simulated chat, and interactive financial analytics.
 
@@ -9,27 +9,27 @@
 ```
 rental-pm-pro/
 ├── frontend/                        # Pure HTML/CSS/JS frontend (works offline)
-│   ├── index.html                   # ★ Dashboard (original + Chart.js revenue graph)
-│   ├── properties.html              # ★ Property management (original)
-│   ├── tenants.html                 # ★ Tenant management (original)
-│   ├── payments.html                # ★ Payment tracking (original)
-│   ├── maintenance.html             # ★ Maintenance tickets (original)
-│   ├── login.html                   # ✨ NEW — Multi-role auth (JWT + demo mode)
-│   ├── leases.html                  # ✨ NEW — Lease management + PDF generation
-│   ├── analytics.html               # ✨ NEW — Admin analytics dashboard (Chart.js)
-│   ├── verification.html            # ✨ NEW — Aadhaar verification + AI fraud detection
-│   ├── documents.html               # ✨ NEW — Secure document vault (grid/list view)
-│   ├── notifications.html           # ✨ NEW — Smart notifications center
-│   ├── chat.html                    # ✨ NEW — Real-time tenant ↔ owner messaging
+│   ├── index.html                   #  Dashboard (original + Chart.js revenue graph)
+│   ├── properties.html              #  Property management (original)
+│   ├── tenants.html                 #  Tenant management (original)
+│   ├── payments.html                #  Payment tracking (original)
+│   ├── maintenance.html             #  Maintenance tickets (original)
+│   ├── login.html                   #  NEW — Multi-role auth (JWT + demo mode)
+│   ├── leases.html                  #  NEW — Lease management + PDF generation
+│   ├── analytics.html               #  NEW — Admin analytics dashboard (Chart.js)
+│   ├── verification.html            #  NEW — Aadhaar verification + AI fraud detection
+│   ├── documents.html               #  NEW — Secure document vault (grid/list view)
+│   ├── notifications.html           #  NEW — Smart notifications center
+│   ├── chat.html                    #  NEW — Real-time tenant ↔ owner messaging
 │   ├── data.json                    # Seed data (original)
 │   ├── css/
-│   │   ├── style.css                # ★ Original styles (untouched)
-│   │   └── pro.css                  # ✨ NEW — All production upgrade styles
+│   │   ├── style.css                # Original styles (untouched)
+│   │   └── pro.css                  #  NEW — All production upgrade styles
 │   └── js/
-│       ├── app.js                   # ★ Original app logic (untouched)
+│       ├── app.js                   #  Original app logic (untouched)
 │       └── modules/
-│           ├── api.js               # ✨ NEW — REST API client with JWT
-│           └── pro.js               # ✨ NEW — Sidebar, pagination, shared utilities
+│           ├── api.js               #  NEW — REST API client with JWT
+│           └── pro.js               #  NEW — Sidebar, pagination, shared utilities
 │
 └── backend/                         # Node.js + Express REST API
     ├── server.js                    # Entry point (Helmet, CORS, rate limiting)
@@ -67,7 +67,7 @@ rental-pm-pro/
 
 ---
 
-## 🏗️ System Architecture
+##  System Architecture
 
 Rental PM Pro is designed with a decoupled **Client-Server (Full-Stack) Architecture** that provides high resilience. If the central database is offline, the client seamlessly falls back to a high-fidelity **Offline Demo Mode** leveraging browser `localStorage` and seed files, ensuring zero downtime for client-side evaluation.
 
@@ -121,7 +121,7 @@ graph TD
 
 ---
 
-## 🔄 Core Workflows & Flowcharts
+##  Core Workflows & Flowcharts
 
 ### 1. Multi-Role Authentication & Access Control
 A secure role-based access pipeline checks user credentials, generates standard JSON Web Tokens (access + refresh tokens), and restricts server-side API access based on the user's role: **Admin**, **Owner**, **Tenant**, or **Staff**.
@@ -199,7 +199,7 @@ flowchart TD
 
 ---
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### Option A — Frontend Only (No Server Needed)
 Open `frontend/index.html` in any browser. The app works fully in **demo mode** using `localStorage` for all data — no backend or database required.
@@ -227,7 +227,7 @@ npx serve -l 3000           # Launches the static server at http://localhost:300
 
 ---
 
-## 🔑 Demo Credentials
+##  Demo Credentials
 
 | Role   | Email                    | Password      |
 |--------|--------------------------|---------------|
@@ -237,43 +237,43 @@ npx serve -l 3000           # Launches the static server at http://localhost:300
 
 ---
 
-## ✨ Features Implemented
+##  Features Implemented
 
-### 🔐 Multi-Role Authentication
+###  Multi-Role Authentication
 * JWT access tokens + refresh tokens.
 * Roles: **Admin**, **Owner**, **Tenant**, **Staff**.
 * Account lockout mechanism (protects accounts after 5 failed attempts with a 15-minute lock).
 * Secure password hashing using `bcryptjs` (12 rounds).
 
-### 🪪 Aadhaar-Based Tenant Verification
+###  Aadhaar-Based Tenant Verification
 * Submit the last-4 digits of Aadhaar (UIDAI compliant — no full numbers stored in compliance with privacy acts).
 * Secure uploaded file storage and document tracking.
 * Admin panel to approve or reject submitted applications.
 
-### 🤖 AI Fraud Risk Detection
+###  AI Fraud Risk Detection
 * Automated fraud risk scoring (0–100) per tenant.
 * Variables monitored: unverified Aadhaar, missing contact nodes, suspicious occupation, and high-risk short lease profiles.
 * Alerts triggered dynamically for high-risk scores ($\geq50$).
 
-### 📄 Lease Agreement Management
+###  Lease Agreement Management
 * Create, manage, sign, and terminate agreements.
 * High-quality lease PDF generation via `PDFKit` with e-signatures, clauses, and metadata embedded.
 * Automated renewal alert queues generated 30 days before expiration.
 
-### 📊 Analytics Dashboard
+###  Analytics Dashboard
 * Dynamic revenue trend charts (6-month line graph).
 * Occupancy distribution (doughnut chart).
 * Maintenance ticket categories (bar chart).
 * Property financial return-on-investment collection lists with progress indicators.
 
-### 📁 Secure Document Vault
+###  Secure Document Vault
 * Toggleable Grid/List views.
 * Multer-powered document categorization (Aadhaar, PAN, Lease, Receipt, NOC).
 * Scoped visibility: Public, Property-Scoped, or Admin-Only private documents.
 
 ---
 
-## 🔒 Security Architecture
+##  Security Architecture
 
 | Security Layer | Implementation Detail |
 |---|---|
@@ -289,7 +289,7 @@ npx serve -l 3000           # Launches the static server at http://localhost:300
 
 ---
 
-## 🌐 API Endpoints
+##  API Endpoints
 
 ```text
 POST   /api/auth/register            # Register user
